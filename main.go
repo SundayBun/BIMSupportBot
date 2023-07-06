@@ -4,29 +4,48 @@ import (
 	"BIMSupportBot/config"
 	"BIMSupportBot/internal/telegram"
 	"BIMSupportBot/repository"
+	"context"
+	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"os"
 )
 
 func main() {
-	log.Println("Starting api server")
+	log.Println("Starting server")
 
 	cfg := initConfig()
 
-	psqlDB, err := repository.NewPsqlDB(cfg)
+	// Set client options
+	clientOptions := options.Client().ApplyURI(cfg.Mongo.Url)
+	// Connect to MongoDB
+	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		log.Fatalf("Postgresql init: %s", err)
-	} else {
-		log.Printf("Postgres connected, Status: %#v", psqlDB.Stats())
+		log.Fatal(err)
 	}
-	pgRepository := repository.NewPgRepository(psqlDB)
-	msgHandler := telegram.NewMessageHandler(cfg, pgRepository,echo.)
-	telegram.InitBot(cfg)
+	defer func() {
+		if err = client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
 
-	defer psqlDB.Close()
+	// Check the connection
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		log.Fatalf("Mongo init: %s", err)
+	}
+	fmt.Println("Connected to MongoDB!")
+
+	collection := client.Database(cfg.Mongo.DataBase).Collection(cfg.Mongo.Collection)
+	mongoRepository := repository.NewMongoRepository(collection)
+
+	msgHandler := telegram.NewMessageHandler(cfg, mongoRepository, context.TODO())
+	telegram.InitBot(cfg, msgHandler)
 }
 
 func initConfig() *config.Config {
+	//ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	configPath := GetConfigPath(os.Getenv("config"))
 

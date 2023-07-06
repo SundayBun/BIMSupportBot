@@ -5,6 +5,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/callbackquery"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"log"
 	"net/http"
@@ -30,6 +31,10 @@ func InitBot(cfg *config.Config, msgHandler Handlers) {
 		panic("failed to create new bot: " + err.Error())
 	}
 
+	if !bot.SupportsInlineQueries {
+		panic("bot does not support inline queries - enable them in botfather first!")
+	}
+
 	// Create updater
 	updater := ext.NewUpdater(&ext.UpdaterOpts{
 		Dispatcher: ext.NewDispatcher(&ext.DispatcherOpts{
@@ -43,6 +48,7 @@ func InitBot(cfg *config.Config, msgHandler Handlers) {
 
 	// config handlers
 	updater.Dispatcher.AddHandler(handlers.NewMessage(message.Text, msgHandler.handleMessage))
+	updater.Dispatcher.AddHandler(handlers.NewCallback(callbackquery.All, msgHandler.handleCallbackQuery))
 	//start webhook
 	startWebHook(cfg, bot, updater)
 	updater.Idle()

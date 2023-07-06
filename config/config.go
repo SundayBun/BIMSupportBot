@@ -12,6 +12,13 @@ type Config struct {
 	Server            ServerConfig
 	Metrics           Metrics
 	TelegramApiConfig TelegramBotApiConfig
+	Mongo             MongoDbCongig
+}
+
+type MongoDbCongig struct {
+	Url        string
+	DataBase   string
+	Collection string
 }
 
 type TelegramBotApiConfig struct {
