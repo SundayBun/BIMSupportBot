@@ -47,6 +47,7 @@ func InitBot(cfg *config.Config, msgHandler Handlers) {
 	})
 
 	// config handlers
+	updater.Dispatcher.AddHandler(handlers.NewCommand("start", msgHandler.handleCommand))
 	updater.Dispatcher.AddHandler(handlers.NewMessage(message.Text, msgHandler.handleMessage))
 	updater.Dispatcher.AddHandler(handlers.NewCallback(callbackquery.All, msgHandler.handleCallbackQuery))
 	//start webhook

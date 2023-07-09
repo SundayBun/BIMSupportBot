@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  web:
+    container_name: api
+    build: .
+    ports:
+      - "5000:5000"
+      - "7070:7070"
+    environment:
+      - PORT=5000
+    depends_on:
+      - mongo
+    restart: always
+    volumes:
+      - ./:/app
+    networks:
+      - bim_bot
+
+  mongo:
+    image: 'mongo:latest'
+    container_name: 'mongo'
+    ports:
+      - '27100:27017'
+    volumes:
+      - ./data/dev/mongo:/data/db
+
+  prometheus:
+    container_name: prometheus_container
+    image: prom/prometheus
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:Z
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention=20d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - '9090:9090'
+    networks:
+      - bim_bot
+
+  grafana:
+    container_name: grafana_container
+    restart: always
+    image: grafana/grafana
+    ports:
+      - '3000:3000'
+    networks:
+      - bim_bot
+networks:
+  bim_bot:
+    driver: bridge

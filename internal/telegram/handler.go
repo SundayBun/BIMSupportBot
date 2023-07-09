@@ -12,6 +12,7 @@ import (
 type Handlers interface {
 	handleMessage(b *gotgbot.Bot, ctx *ext.Context) error
 	handleCallbackQuery(b *gotgbot.Bot, ctx *ext.Context) error
+	handleCommand(b *gotgbot.Bot, ctx *ext.Context) error
 }
 
 type messageHandler struct {
@@ -22,6 +23,14 @@ type messageHandler struct {
 
 func NewMessageHandler(cfg *config.Config, repository repository.Repository, context context.Context) Handlers {
 	return &messageHandler{cfg: cfg, repo: repository, context: context}
+}
+
+func (msgh messageHandler) handleCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, err := ctx.EffectiveMessage.Reply(b, fmt.Sprintf("Hello, I'm @%s. I will try to answer your questions. Enter key words to find an answer", b.User.Username), nil)
+	if err != nil {
+		return fmt.Errorf("failed to send start message: %w", err)
+	}
+	return nil
 }
 
 func (msgh messageHandler) handleMessage(b *gotgbot.Bot, ctx *ext.Context) error {
