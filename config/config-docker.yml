@@ -1,0 +1,9 @@
+mongo:
+  Url: mongodb://localhost:27017
+  DataBase: BimDb
+  Collection: descriptionCollection
+
+telegram:
+  token: someToken
+  domain: someDomain
+  secret: someSecret
