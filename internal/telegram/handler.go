@@ -46,15 +46,20 @@ func (msgh messageHandler) handleCallbackQuery(b *gotgbot.Bot, ctx *ext.Context)
 	var entity, err = msgh.repo.GetById(msgh.context, cb.Data)
 
 	if err != nil {
-		return fmt.Errorf("failed to get entity by id: %w", err)
+		return fmt.Errorf("failed to get entity by id: %w, id: %s", err, cb.Data)
 	}
-	_, err = cb.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
-		Text: entity.Description,
-	})
+	_, err = ctx.EffectiveMessage.Reply(b, entity.Description, nil)
 	if err != nil {
-		return fmt.Errorf("failed to answer to callback query: %w", err)
+		return fmt.Errorf("failed to send start message: %w", err)
 	}
 	return nil
+	//_, err = cb.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+	//	Text: entity.Description,
+	//})
+	//if err != nil {
+	//	return fmt.Errorf("failed to answer to callback query: %w", err)
+	//}
+	//return nil
 }
 
 func startInlineQuery(b *gotgbot.Bot, ctx *ext.Context, entityList []repository.BimEntity) error {
@@ -104,7 +109,7 @@ func createInlineKeyboard(entityList []repository.BimEntity) [][]gotgbot.InlineK
 	for _, i := range entityList {
 		var inlineKB = gotgbot.InlineKeyboardButton{
 			Text:         i.Title,
-			CallbackData: i.ID.String(),
+			CallbackData: i.ID.Hex(),
 		}
 		inlineKeyboardButton = append(inlineKeyboardButton, inlineKB)
 	}

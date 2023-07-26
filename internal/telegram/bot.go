@@ -19,7 +19,7 @@ import (
 
 func InitBot(cfg *config.Config, msgHandler Handlers) {
 	// Create bot
-	bot, err := gotgbot.NewBot(cfg.TelegramApiConfig.Token, &gotgbot.BotOpts{
+	bot, err := gotgbot.NewBot(cfg.TelegramApi.Token, &gotgbot.BotOpts{
 		Client: http.Client{},
 		DefaultRequestOpts: &gotgbot.RequestOpts{
 			Timeout: gotgbot.DefaultTimeout,
@@ -57,17 +57,17 @@ func InitBot(cfg *config.Config, msgHandler Handlers) {
 
 func startWebHook(cfg *config.Config, bot *gotgbot.Bot, updater *ext.Updater) {
 	webhookOpts := ext.WebhookOpts{
-		ListenAddr:  "localhost:8080",             // This example assumes you're in a dev environment running ngrok on 8080.
-		SecretToken: cfg.TelegramApiConfig.Secret, // Setting a webhook secret here allows you to ensure the webhook is set by you (must be set here AND in SetWebhook!).
+		ListenAddr:  "localhost:8080",       // This example assumes you're in a dev environment running ngrok on 8080.
+		SecretToken: cfg.TelegramApi.Secret, // Setting a webhook secret here allows you to ensure the webhook is set by you (must be set here AND in SetWebhook!).
 	}
 
 	// We use the token as the urlPath for the webhook, as using a secret ensures that strangers aren't crafting fake updates.
-	err := updater.StartWebhook(bot, cfg.TelegramApiConfig.Token, webhookOpts)
+	err := updater.StartWebhook(bot, cfg.TelegramApi.Token, webhookOpts)
 	if err != nil {
 		panic("failed to start webhook: " + err.Error())
 	}
 
-	err = updater.SetAllBotWebhooks(cfg.TelegramApiConfig.Domain, &gotgbot.SetWebhookOpts{
+	err = updater.SetAllBotWebhooks(cfg.TelegramApi.Domain, &gotgbot.SetWebhookOpts{
 		MaxConnections:     100,
 		DropPendingUpdates: true,
 		SecretToken:        webhookOpts.SecretToken,

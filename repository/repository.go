@@ -46,10 +46,10 @@ func NewMongoRepository(collection *mongo.Collection) Repository {
 }
 
 type BimEntity struct {
-	ID          primitive.ObjectID `bson:"_id"`
+	ID          primitive.ObjectID `bson:"_id" json:"id,omitempty"`
 	Title       string             `bson:"title"`
 	Description string             `bson:"description"`
-	Score       string             `bson:"score"`
+	Score       float64            `bson:"score"`
 }
 
 func (mRepository mongoRepository) Save(ctx context.Context, entity BimEntity) error {
@@ -116,7 +116,12 @@ func (mRepository mongoRepository) Delete(ctx context.Context, title string) err
 func (mRepository mongoRepository) GetById(ctx context.Context, id string) (BimEntity, error) {
 	result := BimEntity{}
 	//Define filter query for fetching specific document from collection
-	filter := bson.D{primitive.E{Key: "_id", Value: id}}
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		panic(err)
+	}
+
+	filter := bson.D{primitive.E{Key: "_id", Value: objID}}
 	//Get MongoDB connection using connectionhelper.
 	//client, err := connectionhelper.GetMongoClient()
 	//if err != nil {
@@ -125,7 +130,7 @@ func (mRepository mongoRepository) GetById(ctx context.Context, id string) (BimE
 	////Create a handle to the respective collection in the database.
 	//collection := client.Database(connectionhelper.DB).Collection(connectionhelper.ISSUES)
 	//Perform FindOne operation & validate against the error.
-	err := mRepository.collection.FindOne(ctx, filter).Decode(&result)
+	err = mRepository.collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		return result, err
 	}
@@ -138,7 +143,7 @@ func (mRepository mongoRepository) FullTextSearch(ctx context.Context, inputMsg 
 
 	filter := bson.D{{"$text", bson.D{{"$search", inputMsg}}}}
 	sort := bson.D{{"score", bson.D{{"$meta", "textScore"}}}}
-	projection := bson.D{{"description", 1}, {"score", bson.D{{"$meta", "textScore"}}}, {"_id", 0}}
+	projection := bson.D{{"title", 2}, {"description", 1}, {"score", bson.D{{"$meta", "textScore"}}}, {"_id", 3}}
 	opts := options.Find().SetSort(sort).SetProjection(projection)
 
 	cursor, err := mRepository.collection.Find(ctx, filter, opts)

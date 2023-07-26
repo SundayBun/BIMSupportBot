@@ -8,11 +8,11 @@ import (
 )
 
 type Config struct {
-	Postgres          PostgresConfig
-	Server            ServerConfig
-	Metrics           Metrics
-	TelegramApiConfig TelegramBotApiConfig
-	Mongo             MongoDbCongig
+	//Postgres          PostgresConfig
+	Server      ServerConfig
+	Metrics     Metrics
+	TelegramApi TelegramBotApiConfig
+	Mongo       MongoDbCongig
 }
 
 type MongoDbCongig struct {
@@ -43,19 +43,19 @@ type ServerConfig struct {
 	Debug             bool
 }
 
-type PostgresConfig struct {
-	Host            string
-	Port            string
-	User            string
-	Password        string
-	DbName          string
-	SSLMode         bool
-	Driver          string
-	MaxOpenConns    int
-	ConnMaxLifetime int
-	MaxIdleConns    int
-	ConnMaxIdleTime int
-}
+//type PostgresConfig struct {
+//	Host            string
+//	Port            string
+//	User            string
+//	Password        string
+//	DbName          string
+//	SSLMode         bool
+//	Driver          string
+//	MaxOpenConns    int
+//	ConnMaxLifetime int
+//	MaxIdleConns    int
+//	ConnMaxIdleTime int
+//}
 
 // Metrics config
 type Metrics struct {

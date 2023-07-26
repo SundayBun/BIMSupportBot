@@ -6,10 +6,17 @@ import (
 	"BIMSupportBot/repository"
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"os"
+)
+
+const (
+	CONN_HOST = "localhost"
+	CONN_PORT = "8080"
+	CONN_TYPE = "tcp"
 )
 
 func main() {
@@ -41,6 +48,13 @@ func main() {
 	mongoRepository := repository.NewMongoRepository(collection)
 
 	msgHandler := telegram.NewMessageHandler(cfg, mongoRepository, context.TODO())
+	model := mongo.IndexModel{Keys: bson.D{{"description", "text"}}}
+	name, err := collection.Indexes().CreateOne(context.TODO(), model)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Name of index created: " + name)
+
 	telegram.InitBot(cfg, msgHandler)
 }
 
@@ -65,5 +79,5 @@ func GetConfigPath(configPath string) string {
 	if configPath == "docker" {
 		return "./config/config-docker"
 	}
-	return "./config/config-local.yml"
+	return "./config/config-local"
 }
