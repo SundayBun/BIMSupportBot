@@ -90,6 +90,13 @@ func createInlineQueryList(entityList []repository.BimEntity) []gotgbot.InlineQu
 }
 
 func startQuery(b *gotgbot.Bot, ctx *ext.Context, entityList []repository.BimEntity) error {
+	if len(entityList) == 0 {
+		_, err := ctx.EffectiveMessage.Reply(b, "No result", nil)
+		if err != nil {
+			return fmt.Errorf("failed to send message: %w", err)
+		}
+		return nil
+	}
 	_, err := ctx.EffectiveMessage.Reply(b, "Link to the source description", &gotgbot.SendMessageOpts{
 		ParseMode: "html",
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
@@ -104,15 +111,15 @@ func startQuery(b *gotgbot.Bot, ctx *ext.Context, entityList []repository.BimEnt
 
 func createInlineKeyboard(entityList []repository.BimEntity) [][]gotgbot.InlineKeyboardButton {
 	var resultList [][]gotgbot.InlineKeyboardButton
-	var inlineKeyboardButton []gotgbot.InlineKeyboardButton
 
 	for _, i := range entityList {
+		var inlineKeyboardButton []gotgbot.InlineKeyboardButton
 		var inlineKB = gotgbot.InlineKeyboardButton{
 			Text:         i.Title,
 			CallbackData: i.ID.Hex(),
 		}
 		inlineKeyboardButton = append(inlineKeyboardButton, inlineKB)
+		resultList = append(resultList, inlineKeyboardButton)
 	}
-	resultList = append(resultList, inlineKeyboardButton)
 	return resultList
 }
